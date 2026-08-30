@@ -24,7 +24,7 @@ The application combines semantic search, vector embeddings, FAISS, and a Large 
 
 Try the deployed application here:
 
-[Open AI Document Assistant](https://ai-document-assistant-ebcjy9mjkv4hvrjeufknry.streamlit.app/)
+[Open AI Document Assistant](https://ai-document-assistant-v4ydtjhbpqky25bdaq5wjy.streamlit.app/)
 
 ## How It Works
 
