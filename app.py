@@ -611,8 +611,9 @@ else:
 
 
 st.caption(
-    "Your API key is used only for your current session "
-    "and is not stored by this application."
+    "An OpenAI API key is only required for AI-powered questions. "
+    "Exact searches work without an API key. "
+    "Your key is used only for the current session and is not stored."
 )
 
 
