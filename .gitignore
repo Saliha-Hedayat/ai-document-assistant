@@ -1,0 +1,21 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment variables and API keys
+.env
+.env.*
+
+# Virtual environments
+venv/
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Large PDF documents
+*.pdf
+
+# Operating system files
+.DS_Store
+Thumbs.db
