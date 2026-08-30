@@ -3,3 +3,4 @@ pymupdf==1.26.2
 faiss-cpu==1.11.0
 sentence-transformers==6.0.0
 openai==3.6.0
+torchvision
