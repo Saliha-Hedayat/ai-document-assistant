@@ -4,6 +4,7 @@ import hashlib
 import streamlit as st
 import pymupdf
 import faiss
+
 from sentence_transformers import SentenceTransformer
 from openai import OpenAI
 
@@ -32,9 +33,8 @@ def load_embedding_model():
 embedding_model = load_embedding_model()
 
 
-
 # =========================================================
-# PDF Text Extraction 
+# 1. PDF Text Extraction
 # =========================================================
 
 def extract_text_from_pdf(pdf_bytes):
@@ -50,6 +50,7 @@ def extract_text_from_pdf(pdf_bytes):
     pages = []
 
     for page_number, page in enumerate(document, start=1):
+
         pages.append({
             "page": page_number,
             "text": page.get_text()
@@ -61,7 +62,7 @@ def extract_text_from_pdf(pdf_bytes):
 
 
 # =========================================================
-# Text Chunking
+# 2. Text Chunking
 # =========================================================
 
 def split_text(
@@ -107,6 +108,7 @@ def split_text(
             chunk_text = text[start:end].strip()
 
             if chunk_text:
+
                 chunks.append({
                     "page": page_number,
                     "text": chunk_text
@@ -124,7 +126,7 @@ def split_text(
 
 
 # =========================================================
-# Embedding Generation
+# 3. Embedding Generation
 # =========================================================
 
 def generate_embeddings(chunks):
@@ -146,7 +148,7 @@ def generate_embeddings(chunks):
 
 
 # =========================================================
-# FAISS Vector Index
+# 4. FAISS Vector Index
 # =========================================================
 
 def build_faiss_index(embeddings):
@@ -174,7 +176,7 @@ def build_faiss_index(embeddings):
 
 
 # =========================================================
-# Exact Keyword Search
+# 5. Exact Keyword Search
 # =========================================================
 
 def search_keyword(keyword, chunks):
@@ -201,7 +203,7 @@ def search_keyword(keyword, chunks):
 
 
 # =========================================================
-# Exact Keyword Count
+# 6. Exact Keyword Count
 # =========================================================
 
 def count_keyword_occurrences(keyword, pages):
@@ -241,7 +243,7 @@ def count_keyword_occurrences(keyword, pages):
 
 
 # =========================================================
-# Semantic Retrieval
+# 7. Semantic Retrieval
 # =========================================================
 
 def retrieve_chunks(
@@ -283,7 +285,7 @@ def retrieve_chunks(
 
 
 # =========================================================
-# Answer Generation
+# 8. Answer Generation
 # =========================================================
 
 def generate_answer(
@@ -338,7 +340,7 @@ Answer:
 
 
 # =========================================================
-# Complete Hybrid RAG Pipeline
+# 9. Complete Hybrid RAG Pipeline
 # =========================================================
 
 def ask_document(
@@ -362,8 +364,9 @@ def ask_document(
     question_clean = question.strip()
     question_lower = question_clean.lower()
 
+
     # -----------------------------------------------------
-    # A. Short keyword / phrase search
+    # A. Short Keyword / Phrase Search
     # -----------------------------------------------------
 
     if len(question_clean.split()) <= 3:
@@ -388,7 +391,7 @@ def ask_document(
 
 
     # -----------------------------------------------------
-    # B. Detect year inside a longer question
+    # B. Detect Year Inside a Longer Question
     # -----------------------------------------------------
 
     years = re.findall(
@@ -406,6 +409,11 @@ def ask_document(
                 pages
             )
         )
+
+
+        # -------------------------------------------------
+        # Count Request
+        # -------------------------------------------------
 
         count_phrases = [
             "how many",
@@ -440,6 +448,10 @@ def ask_document(
             return answer, [], None
 
 
+        # -------------------------------------------------
+        # Page Request
+        # -------------------------------------------------
+
         page_phrases = [
             "which page",
             "which pages",
@@ -472,12 +484,25 @@ def ask_document(
             return answer, [], None
 
 
+        # -------------------------------------------------
+        # Year-Related Semantic Question
+        # -------------------------------------------------
+
         keyword_results = search_keyword(
             year,
             chunks
         )
 
         if keyword_results:
+
+            if client is None:
+
+                answer = (
+                    "Please enter your OpenAI API key "
+                    "to ask AI questions."
+                )
+
+                return answer, [], None
 
             retrieved_chunks = (
                 keyword_results[:k]
@@ -497,8 +522,18 @@ def ask_document(
 
 
     # -----------------------------------------------------
-    # C. Normal semantic RAG search
+    # C. Normal Semantic RAG Search
     # -----------------------------------------------------
+
+    if client is None:
+
+        answer = (
+            "Please enter your OpenAI API key "
+            "to ask AI questions."
+        )
+
+        return answer, [], None
+
 
     retrieved_chunks, scores = retrieve_chunks(
         question,
@@ -521,7 +556,7 @@ def ask_document(
 
 
 # =========================================================
-# Streamlit User Interface to upload FPD
+# Streamlit User Interface
 # =========================================================
 
 st.set_page_config(
@@ -532,7 +567,7 @@ st.set_page_config(
 
 
 st.title(
-    "📄 AI Document Assistant PDF"
+    "📄 AI Document Assistant"
 )
 
 
@@ -540,6 +575,8 @@ st.write(
     "Upload a PDF and either search for an exact keyword "
     "or ask a question about the document."
 )
+
+
 # =========================================================
 # User OpenAI API Key
 # =========================================================
@@ -550,12 +587,22 @@ user_api_key = st.text_input(
     placeholder="Enter your OpenAI API key"
 )
 
+
 if user_api_key:
+
     client = OpenAI(
         api_key=user_api_key
     )
+
 else:
+
     client = None
+
+
+st.caption(
+    "Your API key is used only for your current session "
+    "and is not stored by this application."
+)
 
 
 # =========================================================
@@ -699,43 +746,7 @@ if uploaded_file is not None:
 
     if st.button("Search / Ask"):
 
-    if question.strip():
-
-        # Allow exact keyword/year/count searches without an API key
-        short_query = len(question.strip().split()) <= 3
-
-        years = re.findall(
-            r"\b\d{4}\b",
-            question.lower()
-        )
-
-        count_phrases = [
-            "how many",
-            "how often",
-            "number of times",
-            "count",
-            "times mentioned",
-            "how many times"
-        ]
-
-        is_exact_search = (
-            short_query
-            or (
-                years
-                and any(
-                    phrase in question.lower()
-                    for phrase in count_phrases
-                )
-            )
-        )
-
-        if not user_api_key and not is_exact_search:
-
-            st.warning(
-                "Please enter your OpenAI API key for AI questions."
-            )
-
-        else:
+        if question.strip():
 
             with st.spinner(
                 "Searching document..."
@@ -746,7 +757,8 @@ if uploaded_file is not None:
                         question,
                         pages,
                         chunks,
-                        faiss_index
+                        faiss_index,
+                        client
                     )
                 )
 
