@@ -621,9 +621,12 @@ st.caption(
 # PDF Upload
 # =========================================================
 
+st.subheader("1. Upload Document")
+
 uploaded_file = st.file_uploader(
-    "Upload your PDF",
-    type=["pdf"]
+    "Choose a PDF document",
+    type=["pdf"],
+    help="Upload a text-based PDF to analyze."
 )
 
 
@@ -742,12 +745,10 @@ if uploaded_file is not None:
     # =====================================================
     # Search / Question Input
     # =====================================================
-
+    
+    st.subheader("2. Search or Ask")
     question = st.text_input(
-        "Enter a keyword or ask a question:",
-        placeholder=(
-            "Ask a question about the document:"
-        )
+        "Ask a question about the document:"
     )
 
 
