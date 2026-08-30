@@ -30,7 +30,7 @@ def load_embedding_model():
 
 
 embedding_model = load_embedding_model()
-client = OpenAI()
+
 
 
 # =========================================================
@@ -288,7 +288,8 @@ def retrieve_chunks(
 
 def generate_answer(
     question,
-    retrieved_chunks
+    retrieved_chunks,
+    client
 ):
     """
     Generate a grounded answer using only retrieved context.
@@ -345,6 +346,7 @@ def ask_document(
     pages,
     chunks,
     faiss_index,
+    client,
     k=TOP_K
 ):
     """
@@ -360,19 +362,9 @@ def ask_document(
     question_clean = question.strip()
     question_lower = question_clean.lower()
 
-
     # -----------------------------------------------------
-    # Short keyword / phrase search
+    # A. Short keyword / phrase search
     # -----------------------------------------------------
-
-    # Examples:
-    # climate
-    # Afghanistan
-    # 2024
-    # New Inhabitant
-    # 
-    # If the user enters up to 3 words,
-    # first attempt exact search.
 
     if len(question_clean.split()) <= 3:
 
@@ -383,7 +375,6 @@ def ask_document(
             )
         )
 
-        # If exact keyword/phrase exists
         if total_count > 0:
 
             answer = (
@@ -397,7 +388,7 @@ def ask_document(
 
 
     # -----------------------------------------------------
-    # Detect year inside a longer question
+    # B. Detect year inside a longer question
     # -----------------------------------------------------
 
     years = re.findall(
@@ -415,11 +406,6 @@ def ask_document(
                 pages
             )
         )
-
-
-        # -------------------------------------------------
-        # Count question
-        # -------------------------------------------------
 
         count_phrases = [
             "how many",
@@ -454,10 +440,6 @@ def ask_document(
             return answer, [], None
 
 
-        # -------------------------------------------------
-        # Page request
-        # -------------------------------------------------
-
         page_phrases = [
             "which page",
             "which pages",
@@ -490,10 +472,6 @@ def ask_document(
             return answer, [], None
 
 
-        # -------------------------------------------------
-        # Year-related semantic question
-        # -------------------------------------------------
-
         keyword_results = search_keyword(
             year,
             chunks
@@ -507,7 +485,8 @@ def ask_document(
 
             answer = generate_answer(
                 question,
-                retrieved_chunks
+                retrieved_chunks,
+                client
             )
 
             return (
@@ -518,7 +497,7 @@ def ask_document(
 
 
     # -----------------------------------------------------
-    # Normal semantic RAG search
+    # C. Normal semantic RAG search
     # -----------------------------------------------------
 
     retrieved_chunks, scores = retrieve_chunks(
@@ -530,7 +509,8 @@ def ask_document(
 
     answer = generate_answer(
         question,
-        retrieved_chunks
+        retrieved_chunks,
+        client
     )
 
     return (
@@ -560,6 +540,22 @@ st.write(
     "Upload a PDF and either search for an exact keyword "
     "or ask a question about the document."
 )
+# =========================================================
+# User OpenAI API Key
+# =========================================================
+
+user_api_key = st.text_input(
+    "OpenAI API Key",
+    type="password",
+    placeholder="Enter your OpenAI API key"
+)
+
+if user_api_key:
+    client = OpenAI(
+        api_key=user_api_key
+    )
+else:
+    client = None
 
 
 # =========================================================
@@ -703,7 +699,43 @@ if uploaded_file is not None:
 
     if st.button("Search / Ask"):
 
-        if question.strip():
+    if question.strip():
+
+        # Allow exact keyword/year/count searches without an API key
+        short_query = len(question.strip().split()) <= 3
+
+        years = re.findall(
+            r"\b\d{4}\b",
+            question.lower()
+        )
+
+        count_phrases = [
+            "how many",
+            "how often",
+            "number of times",
+            "count",
+            "times mentioned",
+            "how many times"
+        ]
+
+        is_exact_search = (
+            short_query
+            or (
+                years
+                and any(
+                    phrase in question.lower()
+                    for phrase in count_phrases
+                )
+            )
+        )
+
+        if not user_api_key and not is_exact_search:
+
+            st.warning(
+                "Please enter your OpenAI API key for AI questions."
+            )
+
+        else:
 
             with st.spinner(
                 "Searching document..."
