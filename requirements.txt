@@ -1,5 +1,5 @@
 streamlit==1.51.0
-pymupdf==1.26.2
+pymupdf==1.26.4
 faiss-cpu==1.11.0
 sentence-transformers==6.0.0
 openai==3.6.0
