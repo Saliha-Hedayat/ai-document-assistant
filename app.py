@@ -570,6 +570,17 @@ st.title(
     "📄 AI Document Assistant"
 )
 
+st.markdown(
+    """
+    Upload a PDF and interact with its content using:
+
+    - Exact keyword and phrase search
+    - Year and occurrence counting
+    - Semantic search with FAISS
+    - AI-powered document questions using RAG
+    """
+)
+
 
 st.write(
     "Upload a PDF and either search for an exact keyword "
