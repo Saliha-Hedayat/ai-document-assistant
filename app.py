@@ -734,8 +734,7 @@ if uploaded_file is not None:
     question = st.text_input(
         "Enter a keyword or ask a question:",
         placeholder=(
-            "Example: climate, 2040, "
-            "or What are the main climate risks?"
+            "Ask a question about the document:"
         )
     )
 
