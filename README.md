@@ -96,11 +96,14 @@ pip install -r requirements.txt
 
 ## OpenAI API Key
 
-The application requires an OpenAI API key.
+Exact keyword, phrase, year, and occurrence searches can be performed without an OpenAI API key.
 
-Set the API key as an environment variable before running the application.
+AI-powered questions using the RAG pipeline require an OpenAI API key. Users can enter their own API key securely through the password-protected input field in the Streamlit application.
 
-Do not store or commit API keys directly in the source code.
+The API key is used only for the current session and is not stored by the application.
+
+Do not include or commit API keys directly in the source code.
+
 
 ## Run the Application
 
