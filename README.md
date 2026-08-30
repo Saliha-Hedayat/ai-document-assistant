@@ -20,6 +20,12 @@ The application combines semantic search, vector embeddings, FAISS, and a Large 
 - Inspect the retrieved context used to generate answers
 - Cache processed documents for improved performance
 
+## Live Demo
+
+Try the deployed application here:
+
+[Open AI Document Assistant](https://ai-document-assistant-ebcjy9mjkv4hvrjeufknry.streamlit.app/)
+
 ## How It Works
 
 The application follows a hybrid Retrieval-Augmented Generation pipeline:
