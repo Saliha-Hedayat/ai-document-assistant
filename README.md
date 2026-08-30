@@ -157,7 +157,6 @@ Potential improvements include:
 - Persistent vector storage
 - Advanced retrieval and reranking
 - Automated RAG evaluation
-- Cloud deployment
 
 ## Author
 
