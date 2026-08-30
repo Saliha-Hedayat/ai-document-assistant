@@ -756,7 +756,7 @@ if uploaded_file is not None:
     # Ask Button
     # =====================================================
 
-    if st.button("Search / Ask"):
+    if st.button("🔍 Search / Ask", type="primary"):
 
         if question.strip():
 
